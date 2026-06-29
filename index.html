@@ -152,7 +152,7 @@
         <option value="payplus">PayPlus (פייפלוס)</option>
         <option value="tranzila">Tranzila (טרנזילה)</option>
         <option value="cardcom">Cardcom (קארדקום)</option>
-        <option value="paypal">PayPal בלבד</option>
+        <option value="paypal" data-i="optPaypalOnly"></option>
         <option value="none" selected data-i="optNone"></option>
       </select>
 
@@ -207,6 +207,7 @@ const PAIN_KEYS = ["fees","intl","failed","fraud","integ","service"];
 // Translations
 const T = {
   he:{
+    docTitle:"PayPilot — יועץ הסליקה והצ'קאאוט החכם",
     pill:"מנותח מתוך ~25,600 הודעות בקבוצת מנהלי איקומרס",
     h1_a:"מפסיקים לנחש ", h1_g:"איזו סליקה מתאימה לכם", h1_b:" — ובכמה אתם מפסידים בצ'קאאוט.",
     sub:"PayPilot מנתח את פרופיל החנות שלכם וממליץ על ספק הסליקה הנכון, מעריך כמה תחסכו בעמלות, ומאתר בדיוק את החיכוכים שגורמים לכם לאבד לקוחות — במיוחד מחו\"ל.",
@@ -217,7 +218,7 @@ const T = {
     cta:"נתחו והמליצו לי ➔",
     resTitle:"האבחון וההמלצה", resSub:"מבוסס על הקלט שלכם ועל הדפוסים שעלו מהקבוצה.",
     ph:"מלאו את הפרופיל ולחצו \"נתחו\" כדי לקבל המלצה מותאמת.",
-    optCustom:"פיתוח עצמאי / אחר", optNone:"עדיין אין / רק PayPal",
+    optCustom:"פיתוח עצמאי / אחר", optNone:"עדיין אין / רק PayPal", optPaypalOnly:"PayPal בלבד",
     yes:"כן", no:"לא",
     foot1:"PayPilot — אב-טיפוס (POC) למשימת מוצר. נבנה מניתוח שיחות אמת של בעלי חנויות איקומרס בישראל.",
     foot2:"נתוני עמלות וספקים הם הדגמתיים בלבד לצורך האב-טיפוס.",
@@ -238,6 +239,7 @@ const T = {
     }
   },
   en:{
+    docTitle:"PayPilot — Smart Payments & Checkout Advisor",
     pill:"Synthesized from ~25,600 messages in an e-commerce owners group",
     h1_a:"Stop guessing ", h1_g:"which payment provider fits you", h1_b:" — and how much you lose at checkout.",
     sub:"PayPilot reads your store profile and recommends the right acquirer, estimates your fee savings, and pinpoints the exact checkout friction losing you customers — especially international ones.",
@@ -248,7 +250,7 @@ const T = {
     cta:"Analyze & recommend ➔",
     resTitle:"Diagnosis & recommendation", resSub:"Based on your input and the patterns seen in the group.",
     ph:"Fill in the profile and hit \"Analyze\" for a tailored recommendation.",
-    optCustom:"Custom build / other", optNone:"None yet / PayPal only",
+    optCustom:"Custom build / other", optNone:"None yet / PayPal only", optPaypalOnly:"PayPal only",
     yes:"Yes", no:"No",
     foot1:"PayPilot — a product-assignment proof of concept. Built from real conversations of Israeli e-commerce store owners.",
     foot2:"Provider and fee data are illustrative placeholders for the prototype.",
@@ -287,14 +289,17 @@ const QUOTES = {
 let lang = "he";
 let intl = "no";
 let selectedPains = new Set();
+let analyzed = false;
 
 function setLang(l){
   lang = l;
   document.documentElement.lang = l;
   document.documentElement.dir = l === "he" ? "rtl" : "ltr";
+  document.title = T[l].docTitle;
   document.getElementById("he").classList.toggle("on", l==="he");
   document.getElementById("en").classList.toggle("on", l==="en");
   render();
+  if(analyzed) analyze();   // re-translate the results panel into the new language
 }
 
 function render(){
@@ -328,6 +333,7 @@ function render(){
 function fmt(n){ return "₪"+Math.round(n).toLocaleString(); }
 
 function analyze(){
+  analyzed = true;
   const t = T[lang];
   const platform = document.getElementById("platform").value;
   const volume = +document.getElementById("volume").value;   // monthly ₪
