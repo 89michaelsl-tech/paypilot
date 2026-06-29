@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PayPilot — יועץ הסליקה והצ'קאאוט החכם</title>
+<style>
+  :root{
+    --bg:#0c1024; --bg2:#131a3a; --card:#171f44; --card2:#1d2752;
+    --ink:#eef1ff; --muted:#9aa3cf; --line:#2a3566;
+    --brand:#6c5ce7; --brand2:#00c2a8; --accent:#ffb020;
+    --good:#2ecc71; --bad:#ff5a7a; --radius:18px;
+    --shadow:0 18px 50px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:"Segoe UI",system-ui,Arial,sans-serif;
+    background:radial-gradient(1200px 700px at 80% -10%,#1b2350 0%,var(--bg) 55%);
+    color:var(--ink); line-height:1.55; min-height:100vh;
+  }
+  a{color:var(--brand2)}
+  .wrap{max-width:1040px;margin:0 auto;padding:22px 18px 70px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+  .logo{display:flex;align-items:center;gap:11px;font-weight:800;font-size:21px;letter-spacing:.3px}
+  .logo .mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--brand),var(--brand2));
+    display:grid;place-items:center;font-size:20px;box-shadow:0 8px 20px rgba(108,92,231,.5)}
+  .lang{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px}
+  .lang button{background:none;border:none;color:var(--muted);font-weight:700;cursor:pointer;padding:6px 13px;border-radius:999px;font-size:13px}
+  .lang button.on{background:var(--brand);color:#fff}
+  .hero{margin:18px 0 8px}
+  .hero h1{font-size:30px;margin:0 0 8px;line-height:1.25}
+  .hero h1 .g{background:linear-gradient(90deg,var(--brand2),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--muted);max-width:680px;margin:0;font-size:16px}
+  .pill{display:inline-block;font-size:12px;font-weight:700;color:var(--brand2);background:rgba(0,194,168,.12);
+    border:1px solid rgba(0,194,168,.35);padding:5px 12px;border-radius:999px;margin-bottom:14px}
+  .ev{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0 6px}
+  .ev .q{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px;font-size:13px;color:#cfd5f5}
+  .ev .q small{display:block;color:var(--muted);margin-top:7px;font-size:11px}
+  .grid{display:grid;grid-template-columns:1fr;gap:18px;margin-top:24px}
+  @media(min-width:880px){.grid{grid-template-columns:0.95fr 1.05fr}}
+  .card{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px;box-shadow:var(--shadow)}
+  .card h2{margin:0 0 4px;font-size:18px}
+  .card .sub{color:var(--muted);font-size:13px;margin:0 0 16px}
+  label{display:block;font-size:13px;font-weight:700;margin:14px 0 6px;color:#d7dcff}
+  .hint{font-weight:400;color:var(--muted);font-size:12px}
+  select,input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:11px;
+    padding:11px 12px;font-size:14px;font-family:inherit}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .chip{border:1px solid var(--line);background:var(--bg);color:var(--muted);padding:8px 12px;border-radius:999px;
+    font-size:12.5px;cursor:pointer;user-select:none;font-weight:600;transition:.15s}
+  .chip.on{background:rgba(108,92,231,.2);border-color:var(--brand);color:#fff}
+  .toggle{display:flex;gap:8px;margin-top:6px}
+  .toggle button{flex:1;border:1px solid var(--line);background:var(--bg);color:var(--muted);padding:10px;border-radius:11px;
+    font-weight:700;cursor:pointer;font-size:13px}
+  .toggle button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .cta{margin-top:20px;width:100%;border:none;cursor:pointer;border-radius:13px;padding:15px;font-size:16px;font-weight:800;
+    color:#fff;background:linear-gradient(135deg,var(--brand),#8a5cff);box-shadow:0 12px 26px rgba(108,92,231,.45)}
+  .cta:active{transform:translateY(1px)}
+  /* results */
+  #out{min-height:200px}
+  .placeholder{display:grid;place-items:center;height:100%;text-align:center;color:var(--muted);padding:40px 10px}
+  .placeholder .big{font-size:46px;margin-bottom:10px}
+  .diag{background:rgba(0,194,168,.08);border:1px solid rgba(0,194,168,.3);border-radius:13px;padding:14px 16px;margin-bottom:16px}
+  .diag .t{font-size:12px;color:var(--brand2);font-weight:800;letter-spacing:.4px;margin-bottom:4px}
+  .diag p{margin:0;font-size:14.5px}
+  .reco{display:flex;align-items:center;gap:14px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:14px}
+  .reco .badge{min-width:62px;height:62px;border-radius:14px;background:linear-gradient(135deg,var(--brand),var(--brand2));
+    display:grid;place-items:center;font-weight:800;font-size:13px;text-align:center;padding:6px}
+  .reco h3{margin:0;font-size:18px}
+  .reco .why{color:var(--muted);font-size:13px;margin:3px 0 0}
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  .metric{background:var(--bg);border:1px solid var(--line);border-radius:13px;padding:14px}
+  .metric .v{font-size:24px;font-weight:800}
+  .metric .v.good{color:var(--good)}
+  .metric .k{color:var(--muted);font-size:12px;margin-top:2px}
+  .secT{font-size:12px;font-weight:800;color:#cfd5f5;letter-spacing:.4px;margin:18px 0 9px;text-transform:uppercase}
+  .bar{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}
+  .bar .nm{width:92px;color:var(--muted);flex-shrink:0}
+  .bar .track{flex:1;height:9px;background:var(--bg);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+  .bar .fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--brand),var(--brand2))}
+  .bar.win .fill{background:linear-gradient(90deg,var(--brand2),var(--accent))}
+  .bar .sc{width:30px;text-align:left;color:#cfd5f5;font-weight:700}
+  .fixes{list-style:none;padding:0;margin:0}
+  .fixes li{display:flex;gap:10px;align-items:flex-start;background:var(--bg);border:1px solid var(--line);border-radius:11px;
+    padding:11px 13px;margin-bottom:8px;font-size:13.5px}
+  .fixes li .ic{color:var(--accent);font-weight:800;flex-shrink:0}
+  .fixes li b{color:#fff}
+  .disc{color:var(--muted);font-size:11.5px;margin-top:16px;border-top:1px dashed var(--line);padding-top:12px}
+  footer{color:var(--muted);font-size:12px;text-align:center;margin-top:34px;line-height:1.7}
+  .typing{opacity:0;transform:translateY(6px);animation:rise .45s ease forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><span class="mark">🧭</span><span>PayPilot</span></div>
+    <div class="lang">
+      <button id="he" class="on" onclick="setLang('he')">עברית</button>
+      <button id="en" onclick="setLang('en')">EN</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <span class="pill" data-i="pill"></span>
+    <h1 data-i="h1"></h1>
+    <p data-i="sub"></p>
+  </section>
+
+  <div class="ev" id="evidence"></div>
+
+  <div class="grid">
+    <!-- INPUT -->
+    <div class="card">
+      <h2 data-i="formTitle"></h2>
+      <p class="sub" data-i="formSub"></p>
+
+      <label data-i="lPlatform"></label>
+      <select id="platform">
+        <option value="shopify">Shopify</option>
+        <option value="woocommerce">WooCommerce / WordPress</option>
+        <option value="wix">Wix</option>
+        <option value="custom" data-i="optCustom"></option>
+      </select>
+
+      <div class="row">
+        <div>
+          <label data-i="lVolume"></label>
+          <select id="volume">
+            <option value="20000">₪0 – 50K</option>
+            <option value="100000" selected>₪50K – 150K</option>
+            <option value="300000">₪150K – 500K</option>
+            <option value="800000">₪500K – 1M+</option>
+          </select>
+        </div>
+        <div>
+          <label data-i="lAov"></label>
+          <select id="aov">
+            <option value="120">₪50 – 150</option>
+            <option value="250" selected>₪150 – 350</option>
+            <option value="600">₪350 – 800</option>
+            <option value="1500">₪800+</option>
+          </select>
+        </div>
+      </div>
+
+      <label data-i="lCurrent"></label>
+      <select id="current">
+        <option value="meshulam">Meshulam / Grow (משולם)</option>
+        <option value="payplus">PayPlus (פייפלוס)</option>
+        <option value="tranzila">Tranzila (טרנזילה)</option>
+        <option value="cardcom">Cardcom (קארדקום)</option>
+        <option value="paypal">PayPal בלבד</option>
+        <option value="none" selected data-i="optNone"></option>
+      </select>
+
+      <label data-i="lIntl"></label>
+      <div class="toggle" id="intlToggle">
+        <button data-v="yes" data-i="yes"></button>
+        <button data-v="no" class="on" data-i="no"></button>
+      </div>
+
+      <label data-i="lPains"></label>
+      <div class="chips" id="pains"></div>
+
+      <button class="cta" data-i="cta" onclick="analyze()"></button>
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="card">
+      <h2 data-i="resTitle"></h2>
+      <p class="sub" data-i="resSub"></p>
+      <div id="out"><div class="placeholder"><div><div class="big">📊</div><span data-i="ph"></span></div></div></div>
+    </div>
+  </div>
+
+  <footer>
+    <div data-i="foot1"></div>
+    <div data-i="foot2"></div>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   PayPilot — client-side payments & checkout advisor (POC)
+   No backend, no API keys. Rules-based "AI" recommendation.
+   Provider attributes & fees are ILLUSTRATIVE placeholders for
+   the prototype — see README. Replace with a live rates feed +
+   LLM explanation layer in production.
+   ============================================================ */
+
+// Provider model. Scores 1-5 across dimensions surfaced in the data.
+// fee = % per transaction; fixed = monthly ₪.
+const PROVIDERS = {
+  payme:    {name:"PayMe",    fee:1.5, fixed:0,  s:{fees:4, intl:5, integ:5, fraud:4, service:5}, intlReady:true},
+  tranzila: {name:"Tranzila", fee:1.2, fixed:49, s:{fees:5, intl:3, integ:3, fraud:5, service:3}, intlReady:false},
+  meshulam: {name:"Meshulam/Grow", fee:1.9, fixed:0, s:{fees:4, intl:2, integ:4, fraud:3, service:3}, intlReady:false},
+  payplus:  {name:"PayPlus",  fee:2.5, fixed:49, s:{fees:2, intl:4, integ:4, fraud:4, service:4}, intlReady:true},
+  cardcom:  {name:"Cardcom",  fee:1.7, fixed:49, s:{fees:4, intl:3, integ:3, fraud:4, service:3}, intlReady:false},
+  paypal:   {name:"PayPal",   fee:3.4, fixed:0,  s:{fees:1, intl:5, integ:5, fraud:3, service:2}, intlReady:true},
+};
+
+const PAIN_KEYS = ["fees","intl","failed","fraud","integ","service"];
+
+// Translations
+const T = {
+  he:{
+    pill:"מנותח מתוך ~25,600 הודעות בקבוצת מנהלי איקומרס",
+    h1_a:"מפסיקים לנחש ", h1_g:"איזו סליקה מתאימה לכם", h1_b:" — ובכמה אתם מפסידים בצ'קאאוט.",
+    sub:"PayPilot מנתח את פרופיל החנות שלכם וממליץ על ספק הסליקה הנכון, מעריך כמה תחסכו בעמלות, ומאתר בדיוק את החיכוכים שגורמים לכם לאבד לקוחות — במיוחד מחו\"ל.",
+    formTitle:"פרופיל החנות שלי", formSub:"60 שניות. שום דבר לא נשמר — הכל רץ בדפדפן.",
+    lPlatform:"פלטפורמה", lVolume:"מחזור חודשי", lAov:"סל ממוצע",
+    lCurrent:"ספק הסליקה הנוכחי", lIntl:"מוכרים גם ללקוחות מחו\"ל?",
+    lPains:"מה הכי כואב לכם? (אפשר לבחור כמה)",
+    cta:"נתחו והמליצו לי ➔",
+    resTitle:"האבחון וההמלצה", resSub:"מבוסס על הקלט שלכם ועל הדפוסים שעלו מהקבוצה.",
+    ph:"מלאו את הפרופיל ולחצו \"נתחו\" כדי לקבל המלצה מותאמת.",
+    optCustom:"פיתוח עצמאי / אחר", optNone:"עדיין אין / רק PayPal",
+    yes:"כן", no:"לא",
+    foot1:"PayPilot — אב-טיפוס (POC) למשימת מוצר. נבנה מניתוח שיחות אמת של בעלי חנויות איקומרס בישראל.",
+    foot2:"נתוני עמלות וספקים הם הדגמתיים בלבד לצורך האב-טיפוס.",
+    diagT:"אבחון", recoWhy:"למה זה מתאים לכם",
+    mSave:"חיסכון שנתי מוערך בעמלות", mIntl:"הכנסה שנתית שניתן להחזיר מחו\"ל",
+    scoresT:"השוואת ספקים (מותאם לפרופיל שלכם)",
+    fixesT:"תיקוני צ'קאאוט מומלצים",
+    pains:{fees:"עמלות גבוהות",intl:"אין צ'קאאוט באנגלית",failed:"חובת ת\"ז חוסמת לקוחות מחו\"ל / עסקאות נכשלות",fraud:"הונאות / הכחשות עסקה",integ:"קשה לחבר לאתר",service:"שירות גרוע"},
+    cur:"מ-", to:" ל-", yr:"/שנה", perMo:"₪/חודש",
+    fixLib:{
+      eng:["צ'קאאוט באנגלית מלא","עמוד התשלום מוצג רק בעברית — לקוח מחו\"ל לא יודע איפה הוא. תרגום מלא של עמוד התשלום וההזנה הוא הדבר הראשון שמעלה המרה בינלאומית."],
+      id:["ביטול חובת תעודת זהות לכרטיסי חו\"ל","הדרישה לת\"ז ישראלית מפילה כל לקוח זר. הפרידו בין כרטיס ישראלי לכרטיס תייר ובטלו את שדה הת\"ז לזרים."],
+      wallets:["הוספת Apple Pay ו-Google Pay","ארנקים דיגיטליים מקצרים את הצ'קאאוט בנייד ומעלים המרה — קריטי לתנועה מפרסום ממומן."],
+      tds:["הגדרת 3DS חכם לפי סף וסוג כרטיס","הפעילו 3DS מעל סכום מסוים והפרידו כרטיס תייר/ישראלי — מצמצם הכחשות עסקה בלי להפיל המרה לגיטימית."],
+      retry:["שחזור עסקאות שנכשלו + יישוב מול הפלטפורמה","הוסיפו ניסיון-חוזר אוטומטי והתראה כשעסקה נכשלת אך מסומנת כ\"שולמה\" באתר — פער התאמה שעלה במפורש בקבוצה."],
+      fee:["מעבר לספק עם עמלה נמוכה יותר","במחזור שלכם פער של אחוז בעמלה הוא אלפי שקלים בשנה. ההמלצה למעלה כבר לוקחת זאת בחשבון."],
+      integ:["חיבור מובנה לפלטפורמה שלכם","בחרו ספק עם תוסף רשמי לפלטפורמה כדי לחסוך פיתוח ולמנוע תקלות סליקה."]
+    }
+  },
+  en:{
+    pill:"Synthesized from ~25,600 messages in an e-commerce owners group",
+    h1_a:"Stop guessing ", h1_g:"which payment provider fits you", h1_b:" — and how much you lose at checkout.",
+    sub:"PayPilot reads your store profile and recommends the right acquirer, estimates your fee savings, and pinpoints the exact checkout friction losing you customers — especially international ones.",
+    formTitle:"My store profile", formSub:"60 seconds. Nothing is stored — it all runs in your browser.",
+    lPlatform:"Platform", lVolume:"Monthly volume", lAov:"Avg. order value",
+    lCurrent:"Current payment provider", lIntl:"Do you also sell to international customers?",
+    lPains:"What hurts most? (pick any)",
+    cta:"Analyze & recommend ➔",
+    resTitle:"Diagnosis & recommendation", resSub:"Based on your input and the patterns seen in the group.",
+    ph:"Fill in the profile and hit \"Analyze\" for a tailored recommendation.",
+    optCustom:"Custom build / other", optNone:"None yet / PayPal only",
+    yes:"Yes", no:"No",
+    foot1:"PayPilot — a product-assignment proof of concept. Built from real conversations of Israeli e-commerce store owners.",
+    foot2:"Provider and fee data are illustrative placeholders for the prototype.",
+    diagT:"Diagnosis", recoWhy:"Why it fits you",
+    mSave:"Est. annual fee savings", mIntl:"Recoverable annual int'l revenue",
+    scoresT:"Provider comparison (weighted to your profile)",
+    fixesT:"Recommended checkout fixes",
+    pains:{fees:"High fees",intl:"No English checkout",failed:"ID requirement blocks foreign buyers / failed payments",fraud:"Fraud / chargebacks",integ:"Hard to integrate",service:"Poor service"},
+    cur:"from ", to:" to ", yr:"/yr", perMo:"₪/mo",
+    fixLib:{
+      eng:["Full English checkout","Your payment page shows only in Hebrew — a foreign buyer is lost. Translating the payment and details page is the single biggest lever for international conversion."],
+      id:["Drop the Israeli ID requirement for foreign cards","A mandatory Israeli ID drops every overseas customer. Separate tourist vs. Israeli cards and remove the ID field for foreigners."],
+      wallets:["Add Apple Pay & Google Pay","Digital wallets shorten mobile checkout and lift conversion — critical for paid-ad traffic."],
+      tds:["Smart 3DS by threshold and card type","Trigger 3DS above a set amount and separate tourist/Israeli cards — cuts chargebacks without killing legit conversion."],
+      retry:["Failed-payment recovery + platform reconciliation","Add auto-retry and an alert when a payment fails but the site marks it \"paid\" — a reconciliation gap raised explicitly in the group."],
+      fee:["Move to a lower-fee provider","At your volume, a 1% fee gap is thousands of shekels a year. The recommendation above already accounts for this."],
+      integ:["Native plugin for your platform","Pick a provider with an official plugin for your platform to save dev work and avoid checkout breakages."]
+    }
+  }
+};
+
+// real (translated, anonymized) quotes from the dataset
+const QUOTES = {
+  he:[
+    ["\"הסליקה של משולם מאד לא נוחה ללקוחות מחו\"ל — ממשק רק בעברית, צריך ת\"ז. חוץ מפייפאל מה האלטרנטיבות?\"","בעלת חנות, ווקומרס"],
+    ["\"הפשלות לא שוות את העמלות המטורפות של פייפלוס.\"","בעל חנות"],
+    ["\"שמתי לב אחרי שבועיים שהעסקה נכשלה והכסף לא הועבר — כל אחד מגלגל את האחריות לשני.\"","בעל חנות"]
+  ],
+  en:[
+    ["\"Meshulam is very inconvenient for overseas customers — Hebrew-only UI, needs an ID number. Other than PayPal, what are the alternatives?\"","Store owner, WooCommerce"],
+    ["\"The glitches aren't worth PayPlus's insane fees.\"","Store owner"],
+    ["\"Two weeks later I noticed the transaction had failed and the money wasn't transferred — everyone passes the blame.\"","Store owner"]
+  ]
+};
+
+let lang = "he";
+let intl = "no";
+let selectedPains = new Set();
+
+function setLang(l){
+  lang = l;
+  document.documentElement.lang = l;
+  document.documentElement.dir = l === "he" ? "rtl" : "ltr";
+  document.getElementById("he").classList.toggle("on", l==="he");
+  document.getElementById("en").classList.toggle("on", l==="en");
+  render();
+}
+
+function render(){
+  const t = T[lang];
+  // simple data-i bindings
+  document.querySelectorAll("[data-i]").forEach(el=>{
+    const k = el.getAttribute("data-i");
+    if(k==="h1"){ el.innerHTML = t.h1_a+'<span class="g">'+t.h1_g+'</span>'+t.h1_b; return; }
+    if(t[k]!==undefined) el.textContent = t[k];
+  });
+  // evidence quotes
+  document.getElementById("evidence").innerHTML = QUOTES[lang].map(q=>
+    '<div class="q">'+q[0]+'<small>— '+q[1]+'</small></div>').join("");
+  // pains chips
+  const wrap = document.getElementById("pains");
+  wrap.innerHTML = "";
+  Object.entries(t.pains).forEach(([k,label])=>{
+    const c = document.createElement("div");
+    c.className = "chip"+(selectedPains.has(k)?" on":"");
+    c.textContent = label;
+    c.onclick = ()=>{ selectedPains.has(k)?selectedPains.delete(k):selectedPains.add(k); render(); };
+    wrap.appendChild(c);
+  });
+  // intl toggle
+  document.querySelectorAll("#intlToggle button").forEach(b=>{
+    b.classList.toggle("on", b.getAttribute("data-v")===intl);
+    b.onclick = ()=>{ intl = b.getAttribute("data-v"); render(); };
+  });
+}
+
+function fmt(n){ return "₪"+Math.round(n).toLocaleString(); }
+
+function analyze(){
+  const t = T[lang];
+  const platform = document.getElementById("platform").value;
+  const volume = +document.getElementById("volume").value;   // monthly ₪
+  const aov = +document.getElementById("aov").value;
+  const current = document.getElementById("current").value;
+  const sellsIntl = intl === "yes";
+  const pains = selectedPains;
+
+  // ---- weight scoring dimensions by the user's stated pains + profile ----
+  const w = {fees:1, intl:1, integ:1, fraud:1, service:1};
+  if(pains.has("fees")) w.fees += 2;
+  if(pains.has("intl")||pains.has("failed")||sellsIntl) w.intl += 2.2;
+  if(pains.has("fraud")) w.fraud += 2;
+  if(pains.has("integ")) w.integ += 1.6;
+  if(pains.has("service")) w.service += 1.6;
+  if(volume >= 300000) w.fees += 1; // bigger volume => fees matter more
+
+  // score each provider
+  const scored = Object.entries(PROVIDERS).map(([id,p])=>{
+    let raw = 0, wsum = 0;
+    for(const dim in w){ raw += p.s[dim]*w[dim]; wsum += 5*w[dim]; }
+    let score = raw/wsum; // 0..1
+    if(sellsIntl && !p.intlReady) score *= 0.8; // penalize non-intl-ready when selling abroad
+    return {id, ...p, score};
+  }).sort((a,b)=>b.score-a.score);
+
+  const winner = scored[0];
+
+  // ---- fee savings vs current ----
+  const annual = volume*12;
+  const curP = PROVIDERS[current] || {fee:2.6, fixed:0}; // 'none' ~ assume high blended
+  const curCost = annual*(curP.fee/100) + (curP.fixed||0)*12;
+  const newCost = annual*(winner.fee/100) + (winner.fixed||0)*12;
+  const save = Math.max(0, curCost-newCost);
+
+  // ---- recoverable international revenue ----
+  // assume X% of demand is international & currently lost to checkout friction
+  let intlRecover = 0;
+  if(sellsIntl){
+    const intlShare = 0.15;          // assumed share of would-be intl demand
+    const lostRate = (pains.has("intl")||pains.has("failed")) ? 0.55 : 0.35; // friction severity
+    intlRecover = annual * intlShare * lostRate;
+  }
+
+  // ---- build checkout fixes from pains/profile ----
+  const F = t.fixLib;
+  const fixes = [];
+  if(sellsIntl || pains.has("intl")) fixes.push(F.eng);
+  if(sellsIntl || pains.has("failed")) fixes.push(F.id);
+  fixes.push(F.wallets);
+  if(pains.has("fraud")) fixes.push(F.tds);
+  if(pains.has("failed")) fixes.push(F.retry);
+  if(pains.has("integ")) fixes.push(F.integ);
+  if(pains.has("fees") && winner.id!==current) fixes.push(F.fee);
+
+  // ---- diagnosis sentence ----
+  const diag = buildDiagnosis(t, {sellsIntl,pains,current,winner,save,volume});
+
+  // ---- render ----
+  let html = '<div class="typing">';
+  html += '<div class="diag"><div class="t">'+t.diagT+'</div><p>'+diag+'</p></div>';
+
+  html += '<div class="reco"><div class="badge">'+winner.name+'</div><div>'+
+          '<h3>'+winner.name+'</h3><div class="why">'+recoWhy(t,winner,sellsIntl,pains)+'</div></div></div>';
+
+  html += '<div class="metrics">'+
+    '<div class="metric"><div class="v good">'+fmt(save)+'</div><div class="k">'+t.mSave+'</div></div>'+
+    '<div class="metric"><div class="v">'+(sellsIntl?fmt(intlRecover):'—')+'</div><div class="k">'+t.mIntl+'</div></div>'+
+    '</div>';
+
+  html += '<div class="secT">'+t.scoresT+'</div>';
+  scored.forEach((p,i)=>{
+    const pct = Math.round(p.score*100);
+    html += '<div class="bar'+(i===0?' win':'')+'"><span class="nm">'+p.name+'</span>'+
+            '<span class="track"><span class="fill" style="width:'+pct+'%"></span></span>'+
+            '<span class="sc">'+pct+'</span></div>';
+  });
+
+  html += '<div class="secT">'+t.fixesT+'</div><ul class="fixes">';
+  fixes.forEach(f=> html += '<li><span class="ic">✓</span><span><b>'+f[0]+'</b><br><span style="color:var(--muted)">'+f[1]+'</span></span></li>');
+  html += '</ul>';
+
+  html += '<div class="disc">'+t.foot2+'</div>';
+  html += '</div>';
+
+  document.getElementById("out").innerHTML = html;
+}
+
+function recoWhy(t,w,sellsIntl,pains){
+  const bits = [];
+  if(pains.has("fees")) bits.push(lang==="he"?"עמלה תחרותית":"competitive fee");
+  if(sellsIntl||pains.has("intl")||pains.has("failed")) bits.push(lang==="he"?"מוכן לסליקה בינלאומית":"international-ready");
+  if(pains.has("integ")) bits.push(lang==="he"?"חיבור קל לפלטפורמה":"easy platform integration");
+  if(pains.has("fraud")) bits.push(lang==="he"?"הגנת הונאות חזקה":"strong fraud protection");
+  if(pains.has("service")) bits.push(lang==="he"?"שירות גבוה":"high-touch service");
+  if(!bits.length) bits.push(lang==="he"?"איזון הטוב ביותר בין עלות, חיבור ושירות":"best overall balance of cost, integration and service");
+  return (lang==="he"?"הכי גבוה אצלכם על: ":"Top match on: ")+bits.join(lang==="he"?", ":", ")+".";
+}
+
+function buildDiagnosis(t,d){
+  if(lang==="he"){
+    let s = "";
+    if(d.sellsIntl) s += "אתם מוכרים גם לחו\"ל אבל ";
+    if(d.pains.has("intl")||d.pains.has("failed")) s += "הצ'קאאוט שלכם בעברית בלבד וחוסם לקוחות זרים — זו הדליפה היקרה ביותר אצלכם. ";
+    else if(d.sellsIntl) s += "כדאי לוודא שהצ'קאאוט תומך באנגלית ובכרטיסי תייר. ";
+    if(d.pains.has("fees")) s += "אתם משלמים יותר מדי בעמלות ביחס למחזור שלכם. ";
+    if(d.pains.has("fraud")) s += "חשיפה להונאות והכחשות עסקה דורשת הגדרת 3DS חכמה. ";
+    if(!s) s = "החנות שלכם במצב סביר — ההמלצה למטה מכוונת לאופטימיזציה של עלות והמרה. ";
+    s += "המעבר ל-"+d.winner.name+" מטפל בעיקר הכאב ומשחרר תקציב.";
+    return s;
+  } else {
+    let s = "";
+    if(d.sellsIntl) s += "You sell internationally, but ";
+    if(d.pains.has("intl")||d.pains.has("failed")) s += "your checkout is Hebrew-only and blocks foreign buyers — that's your most expensive leak. ";
+    else if(d.sellsIntl) s += "make sure your checkout supports English and tourist cards. ";
+    if(d.pains.has("fees")) s += "You're overpaying on fees relative to your volume. ";
+    if(d.pains.has("fraud")) s += "Fraud/chargeback exposure calls for smart 3DS configuration. ";
+    if(!s) s = "Your store is in decent shape — the recommendation below targets cost and conversion optimization. ";
+    s += "Moving to "+d.winner.name+" addresses the main pain and frees up budget.";
+    return s;
+  }
+}
+
+render();
+</script>
+</body>
+</html>
