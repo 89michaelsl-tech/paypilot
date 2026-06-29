@@ -86,35 +86,5 @@ No build step, no dependencies.
 
 ---
 
-## Deploy free on GitHub Pages
-
-1. Create a **public** repository on your personal GitHub account.
-2. Upload these files (drag-and-drop in the browser works).
-3. Go to **Settings → Pages**, set **Source: Deploy from a branch**, branch
-   `main`, folder `/ (root)`, and Save.
-4. After a minute your live link appears (e.g.
-   `https://<your-username>.github.io/<repo-name>/`). Paste it at the top of this
-   README and into your submission.
-
----
-
-## Production roadmap (what I'd build next)
-
-- **Live rates & capability feed** per provider, replacing the placeholders.
-- **LLM explanation layer** for richer, personalized diagnoses and Q&A.
-- **Real checkout scan**: read a store URL and detect Hebrew-only checkout,
-  missing wallets, the ID-number field, and missing English country list.
-- **Provider integration handoff** — one-click move to the recommended provider.
-- **Telemetry** for the success metrics below.
-
-## How success would be measured
-
-- Activation: % of merchants who complete a profile and view a recommendation.
-- **Provider conversion**: % who switch/adopt the recommended provider.
-- **Fee savings realized** and **international conversion uplift** post-fix.
-- Retention: merchants returning to re-scan checkout after changes.
-
----
-
 _PayPilot is a take-home proof of concept built from analysis of real Israeli
 e-commerce merchant conversations. Not affiliated with any payment provider._
