@@ -76,12 +76,17 @@
   .metric .v.good{color:var(--good)}
   .metric .k{color:var(--muted);font-size:12px;margin-top:2px}
   .secT{font-size:12px;font-weight:800;color:#cfd5f5;letter-spacing:.4px;margin:18px 0 9px;text-transform:uppercase}
-  .bar{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}
-  .bar .nm{width:92px;color:var(--muted);flex-shrink:0}
-  .bar .track{flex:1;height:9px;background:var(--bg);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
-  .bar .fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--brand),var(--brand2))}
-  .bar.win .fill{background:linear-gradient(90deg,var(--brand2),var(--accent))}
-  .bar .sc{width:30px;text-align:left;color:#cfd5f5;font-weight:700}
+  .scoreCap{color:var(--muted);font-size:11.5px;margin:-3px 0 13px}
+  .bar{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:13px}
+  .bar .nm{width:104px;color:#c3cbf2;flex-shrink:0;display:flex;align-items:center}
+  .bar .track{flex:1;height:13px;background:#0a0e22;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+  .bar .fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#5566e6,#7d8cff);transition:width .5s ease}
+  .bar .sc{width:28px;text-align:end;color:#aeb6e6;font-weight:700;flex-shrink:0}
+  .bar.win .nm{color:#fff;font-weight:800}
+  .bar.win .fill{background:linear-gradient(90deg,var(--brand2),#37d98a);box-shadow:0 0 16px rgba(0,194,168,.55)}
+  .bar.win .sc{color:var(--brand2);font-size:14px}
+  .recpill{font-size:10px;font-weight:800;color:#04241b;background:linear-gradient(90deg,var(--brand2),#37d98a);
+    padding:2px 8px;border-radius:999px;margin-inline-start:8px;letter-spacing:.3px;white-space:nowrap;flex-shrink:0}
   .fixes{list-style:none;padding:0;margin:0}
   .fixes li{display:flex;gap:10px;align-items:flex-start;background:var(--bg);border:1px solid var(--line);border-radius:11px;
     padding:11px 13px;margin-bottom:8px;font-size:13.5px}
@@ -225,6 +230,7 @@ const T = {
     diagT:"אבחון", recoWhy:"למה זה מתאים לכם",
     mSave:"חיסכון שנתי מוערך בעמלות", mIntl:"הכנסה שנתית שניתן להחזיר מחו\"ל",
     scoresT:"השוואת ספקים (מותאם לפרופיל שלכם)",
+    scoreCap:"מדורג לפי מידת ההתאמה לכאבים ולפרופיל שבחרתם (ציון 0–100).", recBadge:"מומלץ",
     fixesT:"תיקוני צ'קאאוט מומלצים",
     pains:{fees:"עמלות גבוהות",intl:"אין צ'קאאוט באנגלית",failed:"חובת ת\"ז חוסמת לקוחות מחו\"ל / עסקאות נכשלות",fraud:"הונאות / הכחשות עסקה",integ:"קשה לחבר לאתר",service:"שירות גרוע"},
     cur:"מ-", to:" ל-", yr:"/שנה", perMo:"₪/חודש",
@@ -257,6 +263,7 @@ const T = {
     diagT:"Diagnosis", recoWhy:"Why it fits you",
     mSave:"Est. annual fee savings", mIntl:"Recoverable annual int'l revenue",
     scoresT:"Provider comparison (weighted to your profile)",
+    scoreCap:"Ranked by fit to your selected pains and profile (0–100 score).", recBadge:"Recommended",
     fixesT:"Recommended checkout fixes",
     pains:{fees:"High fees",intl:"No English checkout",failed:"ID requirement blocks foreign buyers / failed payments",fraud:"Fraud / chargebacks",integ:"Hard to integrate",service:"Poor service"},
     cur:"from ", to:" to ", yr:"/yr", perMo:"₪/mo",
@@ -405,11 +412,16 @@ function analyze(){
     '</div>';
 
   html += '<div class="secT">'+t.scoresT+'</div>';
+  html += '<div class="scoreCap">'+t.scoreCap+'</div>';
   scored.forEach((p,i)=>{
     const pct = Math.round(p.score*100);
-    html += '<div class="bar'+(i===0?' win':'')+'"><span class="nm">'+p.name+'</span>'+
-            '<span class="track"><span class="fill" style="width:'+pct+'%"></span></span>'+
-            '<span class="sc">'+pct+'</span></div>';
+    const isWin = i===0;
+    const fade = isWin ? 1 : Math.max(0.42, 1 - i*0.13); // lower ranks fade out
+    const badge = isWin ? '<span class="recpill">✦ '+t.recBadge+'</span>' : '';
+    html += '<div class="bar'+(isWin?' win':'')+'">'+
+            '<span class="nm">'+p.name+'</span>'+
+            '<span class="track"><span class="fill" style="width:'+pct+'%;opacity:'+fade+'"></span></span>'+
+            '<span class="sc">'+pct+'</span>'+badge+'</div>';
   });
 
   html += '<div class="secT">'+t.fixesT+'</div><ul class="fixes">';
